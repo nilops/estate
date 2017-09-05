@@ -12,6 +12,7 @@ var initialState = {
     namespacesPages: 0,
     planOutput: "",
     applyOutput: "",
+    stateObject: {},
     files: [],
     templates: [],
     renderedTemplate: "{}",
@@ -70,6 +71,11 @@ export default createReducer(initialState, {
 
     ["APPLY_NAMESPACE"]: (state, action) => {
         state = set(["applyOutput"])(action.payload)(state)
+        return state
+    },
+
+    ["UPDATE_STATEFILE"]: (state, action) => {
+        state = set(["stateObject"])(action.payload)(state)
         return state
     },
 

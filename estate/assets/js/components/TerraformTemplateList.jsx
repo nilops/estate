@@ -1,5 +1,6 @@
 import { connect } from "react-redux"
 import DashboardListView from "./DashboardListView"
+import urljoin from "url-join"
 import * as api from "../api/terraform"
 
 const TerraformTemplatesTableColumns = [
@@ -58,7 +59,7 @@ let mapDispatchToProps = (dispatch, ownProps) => {
         createObject: (payload) => {
             const req = api.createTemplate(payload)
             req.then((res) => {
-                ownProps.history.push("./templates/" + res.data.slug)
+                ownProps.history.push(  urljoin(ownProps.location.pathname, res.data.slug + "/") )
             })
         }
     }

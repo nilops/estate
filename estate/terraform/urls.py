@@ -8,6 +8,7 @@ router.register(r"file", views.FileApiView)
 router.register(r"template", views.TemplateApiView)
 router.register(r"templateinstance", views.TemplateInstanceApiView)
 router.register(r"namespace", views.NamespaceApiView)
+router.register(r"state", views.StateApiView)
 router.include_root_view = True
 
 urlpatterns = [

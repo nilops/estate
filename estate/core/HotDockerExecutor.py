@@ -147,7 +147,8 @@ class HotDockerExecutor(object):
             end = datetime.datetime.now()
             self.duration = end - start
             self.finish()
-            shutil.rmtree(self.workdir)
+            if os.path.exists(self.workdir):
+                shutil.rmtree(self.workdir)
 
     def get_escrow(self, escrow_id):
         escrow_api = os.environ.get("ESCROW_API_URI")
@@ -193,20 +194,22 @@ class HotDockerExecutor(object):
 
     def pull_image(self):
         if self.streamer is not None:
-            self.streamer.log("Pulling docker image: {0}\n".format(self.docker_image))
+            self.streamer.log("Pulling docker image this may take a while...\n")
+        os.makedirs(self.workdir)
         command = ["docker", "pull", self.docker_image]
         exit_code, output = self.execute_command(command)
         if exit_code != 0:
-            raise Exception("".join(output + "\nExit Code: {0}".format(exit_code)))
+            raise Exception(output)
 
     def execute_command(self, command, capture=False):
         output = []
         stream_index = 0
-        LOG.info("[HotDockerExecutor] Running command: {0}".format(" ".join(command)))
+        LOG.info("[HotDockerExecutor] Running command: '{0}' in directory '{1}'".format(" ".join(command), self.workdir))
         process = subprocess.Popen(
             command,
             stderr=subprocess.STDOUT,
             stdout=subprocess.PIPE,
+            cwd=self.workdir,
         )
         if capture and self.streamer is not None:
             self.streamer.log("Started Execution @ {0}\n".format(datetime.datetime.utcnow()))
@@ -223,9 +226,9 @@ class HotDockerExecutor(object):
         process.communicate()
         exit_code = process.poll()
         if capture and self.streamer is not None:
+            self.streamer.log("\nExit Code: {0}\n".format(exit_code))
+        if capture and self.streamer is not None:
             self.streamer.log("Completed Execution @ {0}".format(datetime.datetime.utcnow()), running=False, exit_code=exit_code)
-        if self.streamer is not None:
-            self.streamer.log("\nExit Code: {0}".format(exit_code))
         return exit_code, "".join(output)
 
     # These are the user implementation points in the overall run flow

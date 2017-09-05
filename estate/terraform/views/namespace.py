@@ -8,6 +8,7 @@ from .template import TemplateInstanceSerializer
 from ..terraform import Terraform
 
 Namespace = apps.get_model('terraform.Namespace')
+State = apps.get_model('terraform.State')
 
 
 class NamespaceSerializer(HistoricalSerializer):
@@ -43,7 +44,8 @@ class NamespaceApiView(HistoryMixin, viewsets.ModelViewSet):
     @decorators.detail_route(methods=["POST"])
     def plan(self, request, *args, **kwargs):
         instance = self.get_object()
-        runner = Terraform("plan", instance)
+        state_obj, _ = State.objects.get_or_create(namespace=instance, defaults={"title": instance.title, "namespace": instance})
+        runner = Terraform("plan", instance, None, state_obj)
         runner.run()
         return response.Response(runner.get_stream())
 
@@ -56,7 +58,8 @@ class NamespaceApiView(HistoryMixin, viewsets.ModelViewSet):
     @decorators.detail_route(methods=["POST"], url_path=r'apply/(?P<plan_hash>.*)')
     def apply(self, request, plan_hash, *args, **kwargs):
         instance = self.get_object()
-        runner = Terraform("apply", instance, plan_hash)
+        state_obj, _ = State.objects.get_or_create(namespace=instance, defaults={"title": instance.title, "namespace": instance})
+        runner = Terraform("apply", instance, plan_hash, state_obj)
         runner.run()
         return response.Response(runner.get_stream())
 

@@ -182,6 +182,18 @@ export function doApplyForNamespace(id, plan_hash) {
     return req
 }
 
+export function getStateForNamespace(id) {
+    const req = axios.get(`/api/terraform/state/?namespace=${id}`)
+    req.then((res) => {
+        console.log(res)
+        dispatch({
+            type: "UPDATE_STATEFILE",
+            payload: res.data[0]
+        })
+    }, messages.handleResponseError)
+    return req
+}
+
 export function getTemplates(page, pagesize, search) {
     dispatch({ type: "LOADING_TEMPLATES"})
     const req = axios.get(`/api/terraform/template/?page=${page}&page_size=${pagesize}&search=${search}`)

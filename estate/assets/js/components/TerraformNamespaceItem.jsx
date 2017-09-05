@@ -33,6 +33,7 @@ class TerraformNamespaceItem extends React.Component {
             const namespace = nextProps.namespace
             nextProps.getPlan(namespace.pk)
             nextProps.getApply(namespace.pk)
+            nextProps.getState(namespace.pk)
             this.mergeFiles(namespace)
             this.mergeTemplates(namespace)
         }
@@ -404,6 +405,18 @@ class TerraformNamespaceItem extends React.Component {
             </pre>
         )
     }
+    createStatePane() {
+        var data = this.props.stateObject
+        var output = join(data.content, "")
+        return (
+            <div>
+                <p>If you need to edit this please contact an administrator</p>
+                <pre className={"col-xs-12 "}>
+                    {output}
+                </pre>
+            </div>
+        )
+    }
     render() {
         if (this.props.namespace == null) {
             return null
@@ -449,6 +462,9 @@ class TerraformNamespaceItem extends React.Component {
                                 <ReactTooltip id="terraform_apply" className="ReactTooltipHoverDelay" delayHide={10} effect='solid'/>
                             </div>
                         </li>
+                        <li>
+                            <NavLink className="col-xs-11" to={ urljoin(url, "/state") } exact activeStyle={{fontWeight: "bold", color: "white", backgroundColor: "#337ab7"}} onClick={this.props.getState.bind(this, namespace.pk)}>Statefile</NavLink>
+                        </li>
                     </ul>
                     <ul className="nav nav-sidebar">
                         <li>
@@ -480,6 +496,7 @@ class TerraformNamespaceItem extends React.Component {
                     <div className="row">
                         <Route path={`${url}/plan`} render={this.createPlanPane.bind(this)} />
                         <Route path={`${url}/apply`} render={this.createApplyPane.bind(this)} />
+                        <Route path={`${url}/state`} render={this.createStatePane.bind(this)} />
                         <Route path={`${url}/file/:file`} render={this.createFilePane.bind(this)} />
                         <Route path={`${url}/template/:template`} render={this.createTemplatePane.bind(this)} />
                     </div>
@@ -509,8 +526,10 @@ const mapStateToProps = (state, ownProps) => {
         updateTemplateOfTemplateInstance: terraform.updateTemplateOfTemplateInstance,
         planOutput: state.terraform.planOutput,
         applyOutput: state.terraform.applyOutput,
+        stateObject: state.terraform.stateObject,
         getPlan: terraform.getPlanForNamespace,
         getApply: terraform.getApplyForNamespace,
+        getState: terraform.getStateForNamespace,
     }
 }
 const mapDispatchToProps = (dispatch, ownProps) => {

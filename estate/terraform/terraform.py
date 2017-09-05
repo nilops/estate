@@ -40,10 +40,11 @@ class TerraformStreamer(DjangoCacheStreamer):
 
 class Terraform(HotDockerExecutor):
 
-    def __init__(self, action, namespace, plan_hash=None):
+    def __init__(self, action, namespace, plan_hash=None, state_obj=None):
         self.action = action
         self.namespace = namespace
         self.plan_hash = plan_hash
+        self.state_obj = state_obj
         config = {
             "docker_image": settings.TERRAFORM_DOCKER_IMAGE,
             "name": self.namespace.slug,
@@ -67,43 +68,57 @@ class Terraform(HotDockerExecutor):
         super(Terraform, self).run(*args, **kwargs)
 
     def write_files(self):
-        if self.streamer is not None:
-            self.streamer.log("Preparing Namespace '{0}' for action '{1}'\n".format(self.namespace.title, self.action))
         LOG.info("[Terraform] Preparing Namespace '{0}' for action '{1}'".format(self.namespace.title, self.action))
         if self.action == "plan":
+            if self.state_obj:
+                LOG.info("[Terraform] Writing terraform statefile")
+                path = os.path.join(self.workdir, "terraform.tfstate")
+                with open(path, "wb") as f:
+                    f.write(self.state_obj.content)
             for item in self.namespace.terraform_files:
                 path = os.path.join(self.workdir, str(item.pk) + "_" + item.slug + ".tf")
                 has_ext = HAS_EXT.search(item.title)
                 if has_ext:
                     path = os.path.join(self.workdir, item.title)
-                if self.streamer is not None:
-                    self.streamer.log("Writing terraform file: {0}\n".format(item.title))
                 LOG.info("[Terraform] Writing file: {0}".format(path))
                 with open(path, "wb") as f:
                     f.write(item.content)
         if self.action == "apply":
             if self.plan_hash is None:
                 raise Exception("Unable to perform action 'apply' no plan was found!")
+            if self.state_obj:
+                LOG.info("[Terraform] Writing terraform statefile")
+                path = os.path.join(self.workdir, "terraform.tfstate")
+                with open(path, "wb") as f:
+                    f.write(self.state_obj.content)
             path = os.path.join(self.workdir, "plan.tar.gz")
             plan_data = self.streamer.get_plan(self.plan_hash)
             if plan_data is None:
                 raise Exception("Unable to find plan data!")
             with open(path, "wb") as f:
                 f.write(plan_data)
-            exit_code, _ = self.execute_command(["tar", "-xzvf", path, "-C", self.workdir], self.workdir)
+            exit_code, _ = self.execute_command(["tar", "-xzvf", path, "-C", self.workdir])
             if exit_code != 0:
                 raise Exception("Unable to unpack plan file!")
 
     def finish(self):
         if self.action == "plan" and self.exit_code == 2:
             path = os.path.join(self.workdir, "plan.tar.gz")
-            exit_code, _ = self.execute_command(["tar", "-czvf", path, "./plan"], self.workdir)
+            exit_code, output = self.execute_command(["tar", "-czvf", path, "./plan"])
             if exit_code != 0:
-                raise Exception("Unable to save plan file!")
+                raise Exception("Unable to save plan file!\n" + output)
             with open(path, "rb") as f:
                 plan_data = f.read()
             plan_hash = hashlib.md5(plan_data).hexdigest()
             self.streamer.save_plan(plan_hash, plan_data)
+        if self.action == "apply" and self.exit_code == 0:
+            path = os.path.join(self.workdir, "terraform.tfstate")
+            exit_code, output = self.execute_command(["cat", path])
+            if exit_code != 0:
+                raise Exception("Failed to save the terraform state!\n" + output)
+            LOG.info("[Terraform] Saving Terraform State - \n" + output)
+            self.state_obj.content = output
+            self.state_obj.save()
 
     def get_stream(self):
         return self.streamer.get()

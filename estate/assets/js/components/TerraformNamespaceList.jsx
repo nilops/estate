@@ -1,5 +1,6 @@
 import { connect } from "react-redux"
 import DashboardListView from "./DashboardListView"
+import urljoin from "url-join"
 import * as api from "../api/terraform"
 
 const TerraformNamespacesTableColumns = [
@@ -51,7 +52,7 @@ let mapDispatchToProps = (dispatch, ownProps) => {
         createObject: (payload) => {
             const req = api.createNamespace(payload)
             req.then((res) => {
-                ownProps.history.push("./namespaces/" + res.data.slug)
+                ownProps.history.push(  urljoin(ownProps.location.pathname, res.data.slug + "/"))
             })
         }
     }

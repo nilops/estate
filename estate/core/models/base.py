@@ -22,5 +22,8 @@ class EstateAbstractBase(PermanentModel, TimeStampedModel, TitleDescriptionModel
     class Meta(TimeStampedModel.Meta):
         abstract = True
 
+    def __unicode__(self):
+        return self.title
+
     def __repr__(self):
         return "<%s:%s pk:%i>" % (self.__class__.__name__, self.title, self.pk)

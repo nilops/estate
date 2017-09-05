@@ -113,13 +113,13 @@ let mapDispatchToProps = (dispatch, ownProps) => {
         addFileToNamespace: (payload) => {
             var req = api.addFileToNamespace(payload)
             req.then((res) => {
-                ownProps.history.push( urljoin(ownProps.url, "/file/", res.data.slug, "/") )
+                ownProps.history.push( urljoin(ownProps.url, "/file/", res.data.slug + "/") )
             })
         },
         addTemplateToNamespace: (payload) => {
             var req = api.addTemplateToNamespace(payload)
             req.then((res) => {
-                ownProps.history.push( urljoin(ownProps.url, "/template/", res.data.slug, "/") )
+                ownProps.history.push( urljoin(ownProps.url, "/template/", res.data.slug + "/") )
             })
         }
     }
