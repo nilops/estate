@@ -66,6 +66,16 @@ LOGGING = {
             'level': 'INFO',
             'handlers': ['stdout'],
             'propagate': False,
-        }
+        },
+        'gunicorn.error': {
+            'level': 'INFO',
+            'handlers': ['stdout'],
+            'propagate': False,
+        },
+        'gunicorn.access': {
+            'level': 'INFO',
+            'handlers': ['stdout'],
+            'propagate': False,
+        },
     }
 }

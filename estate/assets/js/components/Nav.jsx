@@ -23,7 +23,7 @@ class Nav extends React.Component {
                         <li><a href="/api/"> API Docs </a></li>
                         <li><a href="/admin/"> Administration </a></li>
                     </ul>
-                    <div className="navbar-form navbar-right" style={{marginRight: "20px"}}>
+                    <div className="navbar-form navbar-right" style={{marginRight: "1%"}}>
                         <Search />
                         {this.props.token ? <div className="btn btn-default" style={{marginLeft: "10px"}} onClick={this.props.logout}>Logout</div> : null }
                     </div>

@@ -1,4 +1,4 @@
-service:
+dev:
   build: .
   dockerfile: Dockerfile
   command: local
@@ -14,6 +14,21 @@ service:
   environment:
     - "DEBUG=True"
     - "DATABASE_URL=postgres://postgres:estate@postgres:5432/estate"
+  links:
+    - postgres:postgres
+    - consul:consul
+    - vault:vault
+
+prod:
+  build: .
+  dockerfile: Dockerfile
+  ports:
+    - 8000:8000
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  environment:
+    - "DATABASE_URL=postgres://postgres:estate@postgres:5432/estate"
+    - "GUNICORN_WORKER_COUNT=5"
   links:
     - postgres:postgres
     - consul:consul

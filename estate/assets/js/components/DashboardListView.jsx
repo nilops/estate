@@ -11,14 +11,19 @@ class CreateObjectModal extends React.Component {
         super(props, context)
         this.state = {
             title: false,
+            description: false,
         }
     }
     onTitleChange(value) {
         this.setState({ title: value.target.value})
     }
+    onDescriptionChange(value) {
+        this.setState({ description: value.target.value})
+    }
     getResult() {
         return {
             title: this.state.title || false,
+            description: this.state.description || false,
             dependencies: [],
             version_increment: "initial",
         }
@@ -32,6 +37,10 @@ class CreateObjectModal extends React.Component {
                 <div className="form-group">
                     <label>Title</label>
                     <input type="text" className="form-control" onChange={this.onTitleChange.bind(this)} />
+                </div>
+                <div className="form-group">
+                    <label>Description</label>
+                    <input type="text" className="form-control" onChange={this.onDescriptionChange.bind(this)} />
                 </div>
             </Modal>
         )

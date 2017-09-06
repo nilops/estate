@@ -112,9 +112,9 @@ If you wish to hack on Estate, you'll first need to understand its architecture.
 
 Estate is a single docker container that runs a [Django](https://www.djangoproject.com/) application with [Gunicorn](http://gunicorn.org/) workers.  The backend leverages [Django Rest Framework](http://www.django-rest-framework.org/) to design it REST API functionality.  The frontend is compiled by [Webpack](https://webpack.github.io/) using a standard single page app design that leverages [React](https://facebook.github.io/react/) + [Redux](http://redux.js.org/).
 
-Local development has been made a breeze, and long build/compile times have been reduced as much as possible. To get started use [Git](https://git-scm.com/) to clone this repository and run `docker-compose build` from the root of the repository.  Once the build has completed you only need to run this command again if you change the Dockerfile itself, from here on out any changes you make to the codebase will be detected and use hot-reloading techniques to update the running application.
+Local development has been made a breeze, and long build/compile times have been reduced as much as possible. To get started use [Git](https://git-scm.com/) to clone this repository and run `docker-compose build dev` from the root of the repository.  Once the build has completed you only need to run this command again if you change the Dockerfile itself, from here on out any changes you make to the codebase will be detected and use hot-reloading techniques to update the running application.
 
-To start up the application just use `docker-compose up` this will spin up a series of containers, as well as Estate itself, and then you can begin editing the code.
+To start up the application just use `docker-compose up dev` this will spin up a series of containers, as well as Estate itself, and then you can begin editing the code.
 
 Contributing
 ------------

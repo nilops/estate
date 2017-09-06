@@ -1,5 +1,4 @@
 <!--{% load raven %}-->
-{% load staticfiles %}
 {% load render_bundle from webpack_loader %}
 
 <!DOCTYPE html>
@@ -26,13 +25,6 @@
     </head>
     <body>
         <div id="root"></div>
-        <script>
-            window.drf = {
-              csrfHeaderName: "X-CSRFToken",
-              csrfCookieName: 'csrftoken'
-            };
-        </script>
-        <script type="text/javascript" src="{% static 'rest_framework/js/csrf.js' %}"></script>
         {% render_bundle 'main' %}
     </body>
 </html>
