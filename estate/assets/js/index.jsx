@@ -6,9 +6,13 @@ import { createStore, compose, combineReducers } from "redux"
 import { Provider } from "react-redux"
 import persistState from "redux-localstorage"
 import { BrowserRouter } from "react-router-dom"
+import axios from "axios"
 import rootReducer from "./reducers/index"
 import App from "./components/App"
 import "./estate.css"
+
+axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+axios.defaults.xsrfCookieName = "csrftoken";
 
 window.jsyaml = require("js-yaml") // eslint-disable-line no-undef
 

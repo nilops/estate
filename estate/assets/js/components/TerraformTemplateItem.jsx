@@ -159,9 +159,10 @@ class TerraformTemplateItem extends React.Component {
                 <small className="form-text text-muted"> (Uses <a href="http://jinja.pocoo.org/">Jinja</a> Templating)</small>
                 <span className="pull-right">
                     <RadioGroup name="templateMode" selectedValue={this.state.templateMode} onChange={this.onTemplateModeChange.bind(this)}>
-                        MODE: &nbsp;
+                        EDITOR MODE: &nbsp;
                         <Radio value="hcl" /> HCL&nbsp;
                         <Radio value="yaml" /> YAML&nbsp;
+                        <Radio value="json" /> JSON&nbsp;
                     </RadioGroup>
                 </span>
             </span>
@@ -177,25 +178,28 @@ class TerraformTemplateItem extends React.Component {
         if (this.state.templateMode === "hcl"){
             options = { mode: {name: "go", statementIndent: 4}, lint: false }
         }
+        if (this.state.templateMode === "json"){
+            options = {}
+        }
         return (
             <WithLoading loading={loading} reload={this.props.getTemplate}>
                 <h1 className="page-header">Edit <span className="pull-right">{template.version}</span></h1>
                 <div className="row">
                     <div className="col-xs-12">
-                        <Editor title="Description" options={{ mode: "markdown" }} content={this.state.description} onUpdateContent={this.onDescriptionChange.bind(this)} />
+                        <Editor title="Description" options={{ mode: "markdown" }} content={template.description} onUpdateContent={this.onDescriptionChange.bind(this)} />
                     </div>
                 </div>
                 <div className="row">
                     <div className="col-xs-6">
-                        <Editor title={this.createJsonSchemaHeader()} content={this.state.json_schema} onUpdateContent={this.onJsonSchemaChange.bind(this)} />
+                        <Editor title={this.createJsonSchemaHeader()} content={template.json_schema || "{}"} onUpdateContent={this.onJsonSchemaChange.bind(this)} />
                     </div>
                     <div className="col-xs-6">
-                        <Editor title="UI Schema" content={this.state.ui_schema} onUpdateContent={this.onUISchemaChange.bind(this)} />
+                        <Editor title="UI Schema" content={template.ui_schema || "{}"} onUpdateContent={this.onUISchemaChange.bind(this)} />
                     </div>
                 </div>
                 <div className="row">
                     <div className="col-xs-12">
-                        <Editor title={this.createTemplateBodyHeader()} options={options} content={this.state.body} onUpdateContent={this.onBodyChange.bind(this)} />
+                        <Editor title={this.createTemplateBodyHeader()} options={options} content={template.body} onUpdateContent={this.onBodyChange.bind(this)} />
                     </div>
                 </div>
             </WithLoading>

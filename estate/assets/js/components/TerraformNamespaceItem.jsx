@@ -23,6 +23,7 @@ class TerraformNamespaceItem extends React.Component {
         this.state = {
             files: [],
             templates: [],
+            experiment: "",
         }
     }
     componentWillMount() {
@@ -34,6 +35,7 @@ class TerraformNamespaceItem extends React.Component {
             nextProps.getPlan(namespace.pk)
             nextProps.getApply(namespace.pk)
             nextProps.getState(namespace.pk)
+            nextProps.getExperiment(namespace.pk)
             this.mergeFiles(namespace)
             this.mergeTemplates(namespace)
         }
@@ -152,6 +154,11 @@ class TerraformNamespaceItem extends React.Component {
             templates: templates,
         })
     }
+    onExperimentChange(data) {
+        this.setState({
+            experiment: data.currentContent,
+        })
+    }
     saveNamespace() {
         this.isSaving = true
         each(this.state.files, (item) => {
@@ -217,7 +224,17 @@ class TerraformNamespaceItem extends React.Component {
             }
         }
     }
+    experimentNamespace() {
+        this.props.experimentNamespace(this.props.namespace.pk, this.state.experiment)
+    }
+    lockNamespace() {
+        this.props.lockNamespace(this.props.namespace.pk)
+    }
+    unlockNamespace() {
+        this.props.unlockNamespace(this.props.namespace.pk)
+    }
     createFilePane(props) {
+        var locked = this.props.namespace.is_uneditable
         var index = findIndex(this.state.files, {slug: props.match.params.file})
         if (index == -1){
             return null
@@ -227,6 +244,7 @@ class TerraformNamespaceItem extends React.Component {
             <div className="col-xs-12">
                 <h1 className="page-header">
                     {file.title}
+                    {locked ? null :
                     <div className="pull-right">
                         { file.nextDisable ?
                             <div className="btn btn-success btn-inline" onClick={this.onFileToggleDisable.bind(this, index, false)}>Enable</div>
@@ -234,12 +252,14 @@ class TerraformNamespaceItem extends React.Component {
                             <div className="btn btn-danger btn-inline" onClick={this.onFileToggleDisable.bind(this, index, true)}>Disable</div>
                         }
                     </div>
+                    }
                 </h1>
-                <Editor className="editor editor-lg" options={{ mode: "go"}} content={file.nextContent} initialContent={file.content} onUpdateContent={this.onFileChange.bind(this, index)} />
+                <Editor className="editor editor-lg" options={{ mode: "go", readOnly: locked}} content={file.nextContent} initialContent={file.content} onUpdateContent={this.onFileChange.bind(this, index)} />
             </div>
         )
     }
     createFileList() {
+        var locked = this.props.namespace.is_uneditable
         var url = this.props.match.url
         var count = 0
         var elements = []
@@ -256,6 +276,7 @@ class TerraformNamespaceItem extends React.Component {
                     <NavLink className="col-xs-9" to={ urljoin(url, "/file/", item.slug) } activeStyle={{fontWeight: "bold", color: "white", backgroundColor: "#337ab7"}}>
                         {item.title}
                     </NavLink>
+                    {locked ? null :
                     <div className="pull-right">
                         <div data-for={`file_changed_${count}`} data-place="left" data-tip="Changed" className={"glyphicon" + (item.changed ? " glyphicon-exclamation-sign" : "")} />
                         <ReactTooltip id={`file_changed_${count}`} className="ReactTooltipHoverDelay" delayHide={10} effect='solid'/>
@@ -270,6 +291,7 @@ class TerraformNamespaceItem extends React.Component {
                             callback={this.removeFileFromNamespace.bind(this, item.pk)}
                         />
                     </div>
+                    }
                 </li>
             ))
         })
@@ -285,6 +307,7 @@ class TerraformNamespaceItem extends React.Component {
         )
     }
     createTemplatePane(props) {
+        var locked = this.props.namespace.is_uneditable
         var index = findIndex(this.state.templates, {slug: props.match.params.template})
         if (index == -1){
             return null
@@ -303,6 +326,7 @@ class TerraformNamespaceItem extends React.Component {
                 <div className="col-xs-12">
                     <h1 className="page-header">
                         {templateInstance.title}
+                        {locked ? null :
                         <div className="pull-right">
                             { templateInstance.nextDisable ?
                                 <div className="btn btn-success btn-inline" onClick={this.onTemplateToggleDisable.bind(this, index, false)}>Enable</div>
@@ -312,6 +336,7 @@ class TerraformNamespaceItem extends React.Component {
                             {/*<div className="btn btn-default btn-inline">Update</div>*/}
                             <span> [ {templateInstance.template.title} : {templateInstance.template.version} { templateInstance.is_outdated ? this.createTemplateUpdateButton.bind(this)(templateInstance.pk) : "" } ]</span>
                         </div>
+                        }
                     </h1>
                 </div>
                 <div className="col-xs-12">
@@ -319,11 +344,12 @@ class TerraformNamespaceItem extends React.Component {
                         { templateInstance.template.description }
                     </div>
                 </div>
-                <TerraformTemplateRenderer template={template} onInputsChange={this.onInputsChange.bind(this, index)} onOverridesChange={this.onOverridesChange.bind(this, index)}/>
+                <TerraformTemplateRenderer template={template} onInputsChange={this.onInputsChange.bind(this, index)} onOverridesChange={this.onOverridesChange.bind(this, index)} locked={locked}/>
             </div>
         )
     }
     createTemplateList() {
+        var locked = this.props.namespace.is_uneditable
         var url = this.props.match.url
         var count = 0
         var elements = []
@@ -340,6 +366,7 @@ class TerraformNamespaceItem extends React.Component {
                     <NavLink className="col-xs-9" to={ urljoin(url, "/template/", item.slug) } activeStyle={{fontWeight: "bold", color: "white", backgroundColor: "#337ab7"}}>
                         {item.title}
                     </NavLink>
+                    {locked ? null :
                     <div className="pull-right">
                         <div data-for={`template_changed_${count}`} data-place="left" data-tip="Changed" className={"glyphicon" + (item.changed ? " glyphicon-exclamation-sign" : "")} />
                         <ReactTooltip id={`template_changed_${count}`} className="ReactTooltipHoverDelay" delayHide={10} effect='solid'/>
@@ -354,6 +381,7 @@ class TerraformNamespaceItem extends React.Component {
                             callback={this.removeTemplateFromNamespace.bind(this, item.pk)}
                         />
                     </div>
+                    }
                 </li>
             ))
         })
@@ -417,12 +445,65 @@ class TerraformNamespaceItem extends React.Component {
             </div>
         )
     }
+    createExperimentPane() {
+        var locked = this.props.namespace.is_uneditable
+        var data = this.props.experimentOutput
+        var output = join(data.output, "")
+        return (
+            <div>
+                {locked ? null :
+                <div className="col-xs-12">
+                    <Editor className="editor editor-md" options={{ mode: "shell"}} content={this.state.experiment} initialContent="" onUpdateContent={this.onExperimentChange.bind(this)} />
+                </div>
+                }
+                <pre className="col-xs-12">
+                    <Ansi>
+                        {output}
+                    </Ansi>
+                    { !data.running ? null : <div style={{padding: " 0 5px"}} className="glyphicon glyphicon-refresh spinning" /> }
+                </pre>
+            </div>
+        )
+    }
+    createLockableButtons() {
+        const namespace = this.props.namespace
+        const locked = namespace.locked
+        const is_unlockable = namespace.is_unlockable
+        if (locked){
+            if (is_unlockable) {
+                return (
+                    <li>
+                        <ConfirmModal className="btn btn-warning col-xs-12"
+                            buttonText="Unlock"
+                            titleText="Unlock Namespace"
+                            callback={this.unlockNamespace.bind(this)} />
+                    </li>
+                )
+            } else {
+                return (
+                    <li className="text-center">
+                        <div className="col-xs-10 col-xs-offset-1 well" ><span style={{ color: "red"}}>Locked by User:</span><br /> {namespace.locking_user}</div>
+                    </li>
+                )
+            }
+        } else {
+            return (
+                <li>
+                    <ConfirmModal className="btn btn-success col-xs-12"
+                        buttonText="Grab Lock"
+                        titleText="Lock Namespace"
+                        callback={this.lockNamespace.bind(this)} />
+                </li>
+            )
+        }
+    }
     render() {
         if (this.props.namespace == null) {
             return null
         }
         const url = this.props.match.url
         const namespace = this.props.namespace
+        const locked = namespace.is_uneditable
         return (
             <div>
                 <div className="col-xs-2 sidebar">
@@ -433,12 +514,16 @@ class TerraformNamespaceItem extends React.Component {
                         <div className="nav-sidebar-header">
                             <h4>{namespace.title}</h4>
                         </div>
+                        {this.createLockableButtons.bind(this)()}
+                        {locked ? null :
                         <li>
                             <ConfirmModal className="btn btn-danger col-xs-12"
                                 buttonText="Delete"
                                 titleText="Delete Namespace"
                                 callback={this.props.deleteNamespace} />
                         </li>
+                        }
+                        {locked ? null :
                         <li>
                             <ConfirmModal className="btn btn-default col-xs-12"
                                 buttonText="Save"
@@ -446,21 +531,41 @@ class TerraformNamespaceItem extends React.Component {
                                 callback={this.saveNamespace.bind(this)}
                                 disabled={this.hasChanged() == false} />
                         </li>
+                        }
                     </ul>
                     <ul className="nav nav-sidebar">
                         <li>
                             <NavLink className="col-xs-11" to={ urljoin(url, "/plan") } exact  activeStyle={{fontWeight: "bold", color: "white", backgroundColor: "#337ab7"}} onClick={this.props.getPlan.bind(this, namespace.pk)}>Last Plan</NavLink>
-                            <div data-for="terraform_plan" data-place="left" data-tip="terraform plan ..." style={{cursor: "pointer"}} className="pull-right glyphicon glyphicon-play-circle text-primary" onClick={this.planNamespace.bind(this)}></div>
+                            {locked ? null :
                             <div>
-                                <ReactTooltip id="terraform_plan" className="ReactTooltipHoverDelay" delayHide={10} effect='solid'/>
+                                <div data-for="terraform_plan" data-place="left" data-tip="terraform plan ..." style={{cursor: "pointer"}} className="pull-right glyphicon glyphicon-play-circle text-primary" onClick={this.planNamespace.bind(this)}></div>
+                                <div>
+                                    <ReactTooltip id="terraform_plan" className="ReactTooltipHoverDelay" delayHide={10} effect='solid'/>
+                                </div>
                             </div>
+                            }
                         </li>
                         <li>
                             <NavLink className="col-xs-11" to={ urljoin(url, "/apply") } exact activeStyle={{fontWeight: "bold", color: "white", backgroundColor: "#337ab7"}} onClick={this.props.getApply.bind(this, namespace.pk)}>Last Apply</NavLink>
-                            <div data-for="terraform_apply" data-place="left" data-tip="terraform apply ..." style={{cursor: "pointer"}} className="pull-right glyphicon glyphicon-play-circle text-primary" onClick={this.applyNamespace.bind(this)}></div>
+                            {locked ? null :
                             <div>
-                                <ReactTooltip id="terraform_apply" className="ReactTooltipHoverDelay" delayHide={10} effect='solid'/>
+                                <div data-for="terraform_apply" data-place="left" data-tip="terraform apply ..." style={{cursor: "pointer"}} className="pull-right glyphicon glyphicon-play-circle text-primary" onClick={this.applyNamespace.bind(this)}></div>
+                                <div>
+                                    <ReactTooltip id="terraform_apply" className="ReactTooltipHoverDelay" delayHide={10} effect='solid'/>
+                                </div>
                             </div>
+                            }
+                        </li>
+                        <li>
+                            <NavLink className="col-xs-11" to={ urljoin(url, "/experiment") } exact  activeStyle={{fontWeight: "bold", color: "white", backgroundColor: "#337ab7"}} onClick={this.props.getExperiment.bind(this, namespace.pk)}>Last Experiment</NavLink>
+                            {locked ? null :
+                            <div>
+                                <div data-for="terraform_experiment" data-place="left" data-tip="Run any command" style={{cursor: "pointer"}} className="pull-right glyphicon glyphicon-play-circle text-primary" onClick={this.experimentNamespace.bind(this)}></div>
+                                <div>
+                                    <ReactTooltip id="terraform_experiment" className="ReactTooltipHoverDelay" delayHide={10} effect='solid' />
+                                </div>
+                            </div>
+                            }
                         </li>
                         <li>
                             <NavLink className="col-xs-11" to={ urljoin(url, "/state") } exact activeStyle={{fontWeight: "bold", color: "white", backgroundColor: "#337ab7"}} onClick={this.props.getState.bind(this, namespace.pk)}>Statefile</NavLink>
@@ -471,6 +576,7 @@ class TerraformNamespaceItem extends React.Component {
                             <div className="nav-sidebar-header">
                             </div>
                         </li>
+                        {locked ? null :
                         <li>
                             <TerraformNamespaceAddFileModal className="btn btn-default col-xs-12"
                                 buttonText="+"
@@ -479,6 +585,7 @@ class TerraformNamespaceItem extends React.Component {
                                 history={this.props.history}
                                 namespace={namespace} />
                         </li>
+                        }
                     </ul>
                     <ul className="nav nav-sidebar">
                         { this.createFileList.bind(this)() }
@@ -496,6 +603,7 @@ class TerraformNamespaceItem extends React.Component {
                     <div className="row">
                         <Route path={`${url}/plan`} render={this.createPlanPane.bind(this)} />
                         <Route path={`${url}/apply`} render={this.createApplyPane.bind(this)} />
+                        <Route path={`${url}/experiment`} render={this.createExperimentPane.bind(this)} />
                         <Route path={`${url}/state`} render={this.createStatePane.bind(this)} />
                         <Route path={`${url}/file/:file`} render={this.createFilePane.bind(this)} />
                         <Route path={`${url}/template/:template`} render={this.createTemplatePane.bind(this)} />
@@ -527,9 +635,13 @@ const mapStateToProps = (state, ownProps) => {
         planOutput: state.terraform.planOutput,
         applyOutput: state.terraform.applyOutput,
         stateObject: state.terraform.stateObject,
+        experimentOutput: state.terraform.experimentOutput,
         getPlan: terraform.getPlanForNamespace,
         getApply: terraform.getApplyForNamespace,
         getState: terraform.getStateForNamespace,
+        getExperiment: terraform.getExperimentForNamespace,
+        lockNamespace: terraform.lockNamespace,
+        unlockNamespace: terraform.unlockNamespace,
     }
 }
 const mapDispatchToProps = (dispatch, ownProps) => {
@@ -541,6 +653,10 @@ const mapDispatchToProps = (dispatch, ownProps) => {
         applyNamespace: (id, plan_hash) => {
             terraform.doApplyForNamespace(id, plan_hash)
             ownProps.history.push( urljoin(ownProps.match.url, "/apply") )
+        },
+        experimentNamespace: (id, repl_command) => {
+            terraform.doExperimentForNamespace(id, repl_command)
+            ownProps.history.push( urljoin(ownProps.match.url, "/experiment") )
         },
         removeFileFromNamespace: (id) => {
             var req = terraform.removeFileFromNamespace(ownProps.match.params.namespace, id)

@@ -27,7 +27,7 @@ class TemplateSerializer(HistoricalSerializer):
         historical_fields = ("pk", "slug", "title", "description", "version", "json_schema", "ui_schema", "body")
 
     def get_body_mode(self, instance):
-        return renderer.get_style(instance.body) or "hcl"
+        return renderer.get_style(instance.body)
 
     def create(self, validated_data):
         version_increment = validated_data.pop("version_increment", "initial")

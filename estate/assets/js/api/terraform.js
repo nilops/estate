@@ -4,7 +4,7 @@ import * as messages from "./messages"
 
 export function getNamespaces(page, pagesize, search) {
     dispatch({ type: "LOADING_NAMESPACES"})
-    const req = axios.get(`/api/terraform/namespace/?page=${page}&page_size=${pagesize}&search=${search}`)
+    const req = axios.get(`/api/v1/terraform/namespace/?page=${page}&page_size=${pagesize}&search=${search}`)
     req.then((res) => {
         dispatch({
             type: "LIST_NAMESPACES",
@@ -21,7 +21,7 @@ export function getNamespaces(page, pagesize, search) {
 
 export function getNamespace(slug) {
     dispatch({ type: "LOADING_NAMESPACES"})
-    const req = axios.get(`/api/terraform/namespace/?slug=${slug}`)
+    const req = axios.get(`/api/v1/terraform/namespace/?slug=${slug}`)
     req.then((res) => {
         if (res.data.length > 0){
             dispatch({
@@ -37,7 +37,7 @@ export function getNamespace(slug) {
 }
 
 export function createNamespace(payload) {
-    const req = axios.post("/api/terraform/namespace/", payload)
+    const req = axios.post("/api/v1/terraform/namespace/", payload)
     req.then((res) => {
         dispatch({
             type: "UPDATE_NAMESPACE",
@@ -48,7 +48,7 @@ export function createNamespace(payload) {
 }
 
 export function updateNamespace(id, payload) {
-    const req = axios.patch(`/api/terraform/namespace/${id}/`, payload)
+    const req = axios.patch(`/api/v1/terraform/namespace/${id}/`, payload)
     req.then((res) => {
         dispatch({
             type: "UPDATE_NAMESPACE",
@@ -60,7 +60,7 @@ export function updateNamespace(id, payload) {
 }
 
 export function deleteNamespace(id) {
-    const req = axios.delete(`/api/terraform/namespace/${id}/`)
+    const req = axios.delete(`/api/v1/terraform/namespace/${id}/`)
     req.then(() => {
         dispatch({
             type: "DELETE_NAMESPACE",
@@ -71,7 +71,7 @@ export function deleteNamespace(id) {
 }
 
 export function addFileToNamespace(payload) {
-    const req = axios.post("/api/terraform/file/", payload)
+    const req = axios.post("/api/v1/terraform/file/", payload)
     req.then(() => {
         getNamespace(payload.namespace)
     }, messages.handleResponseError)
@@ -79,7 +79,7 @@ export function addFileToNamespace(payload) {
 }
 
 export function updateFile(id, payload) {
-    const req = axios.patch(`/api/terraform/file/${id}/`, payload)
+    const req = axios.patch(`/api/v1/terraform/file/${id}/`, payload)
     req.then((res) => {
         getNamespace(res.data.namespace)
     }, messages.handleResponseError)
@@ -87,7 +87,7 @@ export function updateFile(id, payload) {
 }
 
 export function removeFileFromNamespace(slug, id) {
-    const req = axios.delete(`/api/terraform/file/${id}/`)
+    const req = axios.delete(`/api/v1/terraform/file/${id}/`)
     req.then(() => {
         getNamespace(slug)
     }, messages.handleResponseError)
@@ -95,7 +95,7 @@ export function removeFileFromNamespace(slug, id) {
 }
 
 export function addTemplateToNamespace(payload) {
-    const req = axios.post("/api/terraform/templateinstance/", payload)
+    const req = axios.post("/api/v1/terraform/templateinstance/", payload)
     req.then(() => {
         getNamespace(payload.namespace)
     }, messages.handleResponseError)
@@ -103,7 +103,7 @@ export function addTemplateToNamespace(payload) {
 }
 
 export function updateTemplateInstance(id, payload) {
-    const req = axios.patch(`/api/terraform/templateinstance/${id}/`, payload)
+    const req = axios.patch(`/api/v1/terraform/templateinstance/${id}/`, payload)
     req.then((res) => {
         getNamespace(res.data.namespace)
     }, messages.handleResponseError)
@@ -111,7 +111,7 @@ export function updateTemplateInstance(id, payload) {
 }
 
 export function updateTemplateOfTemplateInstance(id) {
-    const req = axios.post(`/api/terraform/templateinstance/${id}/update_template/`)
+    const req = axios.post(`/api/v1/terraform/templateinstance/${id}/update_template/`)
     req.then((res) => {
         getNamespace(res.data.namespace)
     }, messages.handleResponseError)
@@ -119,7 +119,7 @@ export function updateTemplateOfTemplateInstance(id) {
 }
 
 export function removeTemplateFromNamespace(slug, id) {
-    const req = axios.delete(`/api/terraform/templateinstance/${id}/`)
+    const req = axios.delete(`/api/v1/terraform/templateinstance/${id}/`)
     req.then(() => {
         getNamespace(slug)
     }, messages.handleResponseError)
@@ -127,7 +127,7 @@ export function removeTemplateFromNamespace(slug, id) {
 }
 
 export function getPlanForNamespace(id) {
-    const req = axios.get(`/api/terraform/namespace/${id}/plan_live/`)
+    const req = axios.get(`/api/v1/terraform/namespace/${id}/plan_live/`)
     req.then((res) => {
         dispatch({
             type: "PLAN_NAMESPACE",
@@ -140,7 +140,7 @@ export function getPlanForNamespace(id) {
 export function doPlanForNamespace(id) {
     dispatch({type: "CLEAR_PLAN_NAMESPACE"})
     let loopId = setInterval(() => {getPlanForNamespace(id)}, 1000)
-    const req = axios.post(`/api/terraform/namespace/${id}/plan/`)
+    const req = axios.post(`/api/v1/terraform/namespace/${id}/plan/`)
     req.then((res) => {
         clearInterval(loopId)
         dispatch({
@@ -155,7 +155,7 @@ export function doPlanForNamespace(id) {
 }
 
 export function getApplyForNamespace(id) {
-    const req = axios.get(`/api/terraform/namespace/${id}/apply_live/`)
+    const req = axios.get(`/api/v1/terraform/namespace/${id}/apply_live/`)
     req.then((res) => {
         dispatch({
             type: "APPLY_NAMESPACE",
@@ -168,7 +168,7 @@ export function getApplyForNamespace(id) {
 export function doApplyForNamespace(id, plan_hash) {
     dispatch({type: "CLEAR_APPLY_NAMESPACE"})
     let loopId = setInterval(() => {getApplyForNamespace(id)}, 1000)
-    const req = axios.post(`/api/terraform/namespace/${id}/apply/${plan_hash}/`)
+    const req = axios.post(`/api/v1/terraform/namespace/${id}/apply/${plan_hash}/`)
     req.then((res) => {
         clearInterval(loopId)
         dispatch({
@@ -183,9 +183,8 @@ export function doApplyForNamespace(id, plan_hash) {
 }
 
 export function getStateForNamespace(id) {
-    const req = axios.get(`/api/terraform/state/?namespace=${id}`)
+    const req = axios.get(`/api/v1/terraform/state/?namespace=${id}`)
     req.then((res) => {
-        console.log(res)
         dispatch({
             type: "UPDATE_STATEFILE",
             payload: res.data[0]
@@ -194,9 +193,59 @@ export function getStateForNamespace(id) {
     return req
 }
 
+export function getExperimentForNamespace(id) {
+    const req = axios.get(`/api/v1/terraform/namespace/${id}/experiment_live/`)
+    req.then((res) => {
+        dispatch({
+            type: "EXPERIMENT_NAMESPACE",
+            payload: res.data
+        })
+    }, messages.handleResponseError)
+    return req
+}
+
+export function doExperimentForNamespace(id, repl_command) {
+    dispatch({type: "CLEAR_EXPERIMENT_NAMESPACE"})
+    let loopId = setInterval(() => {getExperimentForNamespace(id)}, 1000)
+    const req = axios.post(`/api/v1/terraform/namespace/${id}/experiment/`, {"repl_command": repl_command})
+    req.then((res) => {
+        clearInterval(loopId)
+        dispatch({
+            type: "EXPERIMENT_NAMESPACE",
+            payload: res.data
+        })
+    }, (err) => {
+        clearInterval(loopId)
+        messages.handleResponseError(err)
+    })
+    return req
+}
+
+export function lockNamespace(id) {
+    const req = axios.post(`/api/v1/terraform/namespace/${id}/lock/`)
+    req.then((res) => {
+        dispatch({
+            type: "UPDATE_NAMESPACE",
+            payload: res.data
+        })
+    }, messages.handleResponseError)
+    return req
+}
+
+export function unlockNamespace(id) {
+    const req = axios.post(`/api/v1/terraform/namespace/${id}/unlock/`)
+    req.then((res) => {
+        dispatch({
+            type: "UPDATE_NAMESPACE",
+            payload: res.data
+        })
+    }, messages.handleResponseError)
+    return req
+}
+
 export function getTemplates(page, pagesize, search) {
     dispatch({ type: "LOADING_TEMPLATES"})
-    const req = axios.get(`/api/terraform/template/?page=${page}&page_size=${pagesize}&search=${search}`)
+    const req = axios.get(`/api/v1/terraform/template/?page=${page}&page_size=${pagesize}&search=${search}`)
     req.then((res) => {
         dispatch({
             type: "LIST_TEMPLATES",
@@ -213,7 +262,7 @@ export function getTemplates(page, pagesize, search) {
 
 export function getTemplate(slug) {
     dispatch({ type: "LOADING_TEMPLATES"})
-    const req = axios.get(`/api/terraform/template/?slug=${slug}`)
+    const req = axios.get(`/api/v1/terraform/template/?slug=${slug}`)
     req.then((res) => {
         if (res.data.length > 0){
             dispatch({
@@ -229,7 +278,7 @@ export function getTemplate(slug) {
 }
 
 export function createTemplate(payload) {
-    const req = axios.post("/api/terraform/template/", payload)
+    const req = axios.post("/api/v1/terraform/template/", payload)
     req.then((res) => {
         dispatch({
             type: "UPDATE_TEMPLATE",
@@ -240,7 +289,7 @@ export function createTemplate(payload) {
 }
 
 export function updateTemplate(id, payload) {
-    const req = axios.patch(`/api/terraform/template/${id}/`, payload)
+    const req = axios.patch(`/api/v1/terraform/template/${id}/`, payload)
     req.then((res) => {
         dispatch({
             type: "UPDATE_TEMPLATE",
@@ -252,7 +301,7 @@ export function updateTemplate(id, payload) {
 }
 
 export function renderTemplate(payload) {
-    const req = axios.post("/api/terraform/template/render/", payload)
+    const req = axios.post("/api/v1/terraform/template/render/", payload)
     req.then((res) => {
         dispatch({
             type: "RENDER_TEMPLATE",
@@ -263,7 +312,7 @@ export function renderTemplate(payload) {
 }
 
 export function deleteTemplate(id) {
-    const req = axios.delete(`/api/terraform/template/${id}/`)
+    const req = axios.delete(`/api/v1/terraform/template/${id}/`)
     req.then(() => {
         dispatch({
             type: "DELETE_TEMPLATE",

@@ -9,6 +9,8 @@ from ..core.DjangoCacheStreamer import DjangoCacheStreamer
 
 LOG = logging.getLogger("estate")
 
+COMMAND_HEADER = "#!/bin/bash +ex\n"
+
 PLAN = """#!/bin/bash +ex
 terraform init {TERRAFORM_EXTRA_ARGS} {TERRAFORM_INIT_EXTRA_ARGS}
 terraform plan {TERRAFORM_EXTRA_ARGS} {TERRAFORM_PLAN_EXTRA_ARGS}
@@ -40,11 +42,12 @@ class TerraformStreamer(DjangoCacheStreamer):
 
 class Terraform(HotDockerExecutor):
 
-    def __init__(self, action, namespace, plan_hash=None, state_obj=None):
+    def __init__(self, action, namespace, plan_hash=None, state_obj=None, repl_command=""):
         self.action = action
         self.namespace = namespace
         self.plan_hash = plan_hash
         self.state_obj = state_obj
+        self.repl_command = repl_command
         config = {
             "docker_image": settings.TERRAFORM_DOCKER_IMAGE,
             "name": self.namespace.slug,
@@ -52,6 +55,8 @@ class Terraform(HotDockerExecutor):
         }
         if action == "plan":
             config["command"] = PLAN
+        elif action == "experiment":
+            config["command"] = COMMAND_HEADER + self.repl_command + "\n"
         else:
             config["command"] = APPLY
         config["command"] = config["command"].format(
@@ -69,12 +74,12 @@ class Terraform(HotDockerExecutor):
 
     def write_files(self):
         LOG.info("[Terraform] Preparing Namespace '{0}' for action '{1}'".format(self.namespace.title, self.action))
+        if self.state_obj:
+            LOG.info("[Terraform] Writing terraform statefile")
+            path = os.path.join(self.workdir, "terraform.tfstate")
+            with open(path, "wb") as f:
+                f.write(self.state_obj.content)
         if self.action == "plan":
-            if self.state_obj:
-                LOG.info("[Terraform] Writing terraform statefile")
-                path = os.path.join(self.workdir, "terraform.tfstate")
-                with open(path, "wb") as f:
-                    f.write(self.state_obj.content)
             for item in self.namespace.terraform_files:
                 path = os.path.join(self.workdir, str(item.pk) + "_" + item.slug + ".tf")
                 has_ext = HAS_EXT.search(item.title)
@@ -86,11 +91,6 @@ class Terraform(HotDockerExecutor):
         if self.action == "apply":
             if self.plan_hash is None:
                 raise Exception("Unable to perform action 'apply' no plan was found!")
-            if self.state_obj:
-                LOG.info("[Terraform] Writing terraform statefile")
-                path = os.path.join(self.workdir, "terraform.tfstate")
-                with open(path, "wb") as f:
-                    f.write(self.state_obj.content)
             path = os.path.join(self.workdir, "plan.tar.gz")
             plan_data = self.streamer.get_plan(self.plan_hash)
             if plan_data is None:

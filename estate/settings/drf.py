@@ -21,6 +21,7 @@ def api_exception_handler(exc, context):
 
 INSTALLED_APPS += [
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_swagger',
 ]
 
@@ -29,11 +30,12 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': "estate.pagination.LinkHeaderPagination",
     'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        #'rest_framework.authentication.BasicAuthentication',
-        #'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        #'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
@@ -53,10 +55,17 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'basic': {
+            'type': 'basic'
+        }
+    },
+    'LOGIN_URL': 'rest_framework:login',
+    'LOGOUT_URL': 'rest_framework:logout',
     'USE_SESSION_AUTH': True,
     'APIS_SORTER': 'alpha',
     'JSON_EDITOR': True,
     'VALIDATOR_URL': None
 }
 
-CORS_URLS_REGEX = r'^/api/.*$'
+CORS_URLS_REGEX = r'^/api/v1/.*$'

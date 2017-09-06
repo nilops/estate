@@ -62,12 +62,12 @@ def is_json(value):
 
 def get_style(value):
     template = apply_jinja(value)
-    type_is_hcl, data, hcl_exception = is_hcl(template)
-    if type_is_hcl:
-        return "hcl"
     type_is_json, data, json_exception = is_json(template)
     if type_is_json:
         return "json"
+    type_is_hcl, data, hcl_exception = is_hcl(template)
+    if type_is_hcl:
+        return "hcl"
     type_is_yaml, data, yaml_exception = is_yaml(template)
     if type_is_yaml:
         if type(data) in [type(None), type({})]:

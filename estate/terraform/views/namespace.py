@@ -16,11 +16,24 @@ class NamespaceSerializer(HistoricalSerializer):
     owner = serializers.CharField(default="", allow_blank=True)
     files = FileSerializer(many=True, read_only=True, is_history=True)
     templates = TemplateInstanceSerializer(many=True, read_only=True, is_history=True)
+    locking_user = serializers.SlugRelatedField(slug_field="username", read_only=True)
+    is_unlockable = serializers.SerializerMethodField(read_only=True)
+    is_uneditable = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Namespace
-        fields = ("pk", "slug", "title", "description", "owner", "files", "templates", "created", "modified")
-        historical_fields = ("pk", "slug", "title", "description", "owner", "historical_files", "historical_templates")
+        fields = ("pk", "slug", "title", "description", "owner", "files", "templates", "locked", "locking_user", "is_unlockable", "is_uneditable", "created", "modified")
+        historical_fields = ("pk", "slug", "title", "description", "owner", "locked", "locking_user", "historical_files", "historical_templates")
+
+    def get_is_unlockable(self, instance):
+        return instance.is_unlockable(self.context["request"].user)
+
+    def get_is_uneditable(self, instance):
+        result = False
+        if instance.locked is True:
+            if instance.is_unlockable(self.context["request"].user) is not True:
+                result = True
+        return result
 
 
 class NamespaceFilter(filters.FilterSet):
@@ -40,6 +53,33 @@ class NamespaceApiView(HistoryMixin, viewsets.ModelViewSet):
     filter_class = NamespaceFilter
     search_fields = ('title',)
     ordering_fields = ('title', 'created', 'modified')
+
+    @decorators.detail_route(methods=["POST"])
+    def lock(self, request, *args, **kwargs):
+
+        if request.user.is_authenticated() is False:
+            raise Exception("Unable to perform a lock for an anonymous user! {0}".format(request.user))
+        instance = self.get_object()
+        if instance.is_unlockable(request.user) is False:
+            raise Exception("{0} is not lockable, it is currently locked by {1}".format(instance, instance.locking_user))
+        instance.locked = True
+        instance.locking_user = request.user
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return response.Response(serializer.data)
+
+    @decorators.detail_route(methods=["POST"])
+    def unlock(self, request, *args, **kwargs):
+        if request.user.is_authenticated() is False:
+            raise Exception("Unable to perform an unlock for an anonymous user!")
+        instance = self.get_object()
+        if instance.is_unlockable(request.user) is False:
+            raise Exception("{0} is not unlockable, it is currently locked by {1}".format(instance, instance.locking_user))
+        instance.locked = False
+        instance.locking_user = None
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return response.Response(serializer.data)
 
     @decorators.detail_route(methods=["POST"])
     def plan(self, request, *args, **kwargs):
@@ -67,4 +107,18 @@ class NamespaceApiView(HistoryMixin, viewsets.ModelViewSet):
     def apply_live(self, request, *args, **kwargs):
         instance = self.get_object()
         runner = Terraform("apply", instance, {})
+        return response.Response(runner.get_stream())
+
+    @decorators.detail_route(methods=["POST"])
+    def experiment(self, request, *args, **kwargs):
+        instance = self.get_object()
+        state_obj, _ = State.objects.get_or_create(namespace=instance, defaults={"title": instance.title, "namespace": instance})
+        runner = Terraform("experiment", instance, None, state_obj, request.data["repl_command"])
+        runner.run()
+        return response.Response(runner.get_stream())
+
+    @decorators.detail_route(methods=["Get"])
+    def experiment_live(self, request, *args, **kwargs):
+        instance = self.get_object()
+        runner = Terraform("experiment", instance)
         return response.Response(runner.get_stream())

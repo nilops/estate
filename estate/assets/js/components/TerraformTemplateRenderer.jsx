@@ -17,6 +17,7 @@ class TerraformTemplateRenderer extends React.Component {
             inputs: {},
             overrides: "",
             disable: false,
+            locked: false,
         }
     }
     componentWillMount() {
@@ -29,6 +30,7 @@ class TerraformTemplateRenderer extends React.Component {
         if (nextProps.template && !isEqual(this.props.template, nextProps.template)){
             this.loadTemplateIntoState(nextProps.template)
         }
+        this.setState({locked: nextProps.locked || false})
     }
     componentDidUpdate() {
         if (this.rerenderTemplate){
@@ -167,10 +169,10 @@ class TerraformTemplateRenderer extends React.Component {
         return (
             <div>
                 <div className="col-xs-12 col-md-6" style={{ marginBottom: "10px"}}>
-                    <JsonSchemaForm schema={JSON.parse(this.state.json_schema)} uiSchema={JSON.parse(this.state.ui_schema)} formData={this.state.inputs} onChange={this.onInputsChange.bind(this) } liveValidate={true}>
+                    <JsonSchemaForm schema={JSON.parse(this.state.json_schema)} uiSchema={JSON.parse(this.state.ui_schema)} formData={this.state.inputs} onChange={this.onInputsChange.bind(this) } liveValidate={true} disabled={this.state.locked}>
                         <span/>
                     </JsonSchemaForm>
-                    <Editor title="Overrides" options={{ mode: "yaml" }} content={ this.state.overrides } onUpdateContent={this.onOverridesChange.bind(this)} />
+                    <Editor title="Overrides" options={{ mode: "yaml", readOnly: this.state.locked }} content={ this.state.overrides } onUpdateContent={this.onOverridesChange.bind(this)} />
                 </div>
                 <div className="col-xs-12 col-md-6">
                     <Editor title="Rendered Output" options={{ readOnly: true }} content={ JSON.stringify(this.props.renderedTemplate, null, 2) } />
@@ -182,7 +184,7 @@ class TerraformTemplateRenderer extends React.Component {
         return (
             <div className="col-xs-12">
                 {this.createErrorBars()}
-                {this.createForm()}
+                {this.createForm.bind(this)()}
             </div>
         )
     }

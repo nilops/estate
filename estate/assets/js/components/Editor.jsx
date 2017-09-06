@@ -1,6 +1,6 @@
 import React from "react"
 import { assign, cloneDeep } from "lodash"
-import CodeMirror from "react-codemirror"
+import CodeMirror from '@skidding/react-codemirror';
 import "codemirror/lib/codemirror.css"
 import "codemirror/mode/yaml/yaml.js"
 import "codemirror/mode/javascript/javascript.js"
@@ -49,29 +49,13 @@ var count = 0
 export default class Editor extends React.Component {
     constructor(props, context) {
         super(props, context)
-        this.state = this.prepareContent.bind(this)(props)
-        this.state.changed = false
-    }
-    componentWillReceiveProps(nextProps) {
-        this.setState(this.prepareContent.bind(this)(nextProps))
-    }
-    prepareContent(props) {
-        const currentContent = props.content.replace(re,"\n")
-        var initialContent = cloneDeep(currentContent)
-        if (props.initialContent)
-            initialContent = props.initialContent.replace(re,"\n")
-        return {
-            initialContent: initialContent,
-            currentContent: currentContent,
-        }
     }
     updateContent(value) {
-        const changed = (this.state.initialContent != value)
+        const changed = (this.props.content.replace(re,"\n") != value)
         const data = {
             currentContent: value,
             changed: changed
         }
-        this.setState(data)
         if (this.props.onUpdateContent) {
             this.props.onUpdateContent(data)
         }
@@ -91,7 +75,7 @@ export default class Editor extends React.Component {
                     <div id={id} className="panel-collapse collapse in">
                         <div className="panel-body" style={{ padding: "0px" }}>
                             <div style={{border: "solid", borderWidth: "1px", clear: "left"}}>
-                                <CodeMirror ref="editor" defaultValue={this.state.currentContent} value={this.state.currentContent} onChange={this.updateContent.bind(this)} options={options} autoFocus={this.props.autoFocus} />
+                                <CodeMirror ref="editor" value={this.props.content.replace(re,"\n")} onChange={this.updateContent.bind(this)} options={options} autoFocus={this.props.autoFocus} disabled={this.props.disabled}/>
                             </div>
                         </div>
                     </div>

@@ -13,6 +13,7 @@ var initialState = {
     planOutput: "",
     applyOutput: "",
     stateObject: {},
+    experimentOutput: "",
     files: [],
     templates: [],
     renderedTemplate: "{}",
@@ -76,6 +77,16 @@ export default createReducer(initialState, {
 
     ["UPDATE_STATEFILE"]: (state, action) => {
         state = set(["stateObject"])(action.payload)(state)
+        return state
+    },
+
+    ["CLEAR_EXPERIMENT_NAMESPACE"]: (state) => {
+        state = set(["experimentOutput"])({})(state)
+        return state
+    },
+
+    ["EXPERIMENT_NAMESPACE"]: (state, action) => {
+        state = set(["experimentOutput"])(action.payload)(state)
         return state
     },
 

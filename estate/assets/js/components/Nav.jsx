@@ -1,8 +1,9 @@
 import React from "react"
+import { connect } from "react-redux"
 import { NavLink, Link } from "react-router-dom"
 import Search from "./Search"
 
-export default class Nav extends React.Component {
+class Nav extends React.Component {
     render () {
         return (
             <nav className="navbar navbar-inverse navbar-fixed-top">
@@ -17,23 +18,33 @@ export default class Nav extends React.Component {
                 </div>
                 <div id="navbar" className="collapse navbar-collapse">
                     <ul className="nav navbar-nav">
-                        <li className="dropdown">
-                            <a href="#" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Terraform <span className="caret"></span></a>
-                            <ul className="dropdown-menu">
-                                <li><Link className="item" to="/terraform/templates">Templates</Link></li>
-                                <li><Link className="item" to="/terraform/namespaces">Namespaces</Link></li>
-                                <li role="separator" className="divider"></li>
-                                <li><a href="https://www.terraform.io/docs/index.html">Documentation</a></li>
-                            </ul>
-                        </li>
+                        <li><NavLink className="item" to="/terraform/templates">Templates</NavLink></li>
+                        <li><NavLink className="item" to="/terraform/namespaces">Namespaces</NavLink></li>
                         <li><a href="/api/"> API Docs </a></li>
                         <li><a href="/admin/"> Administration </a></li>
                     </ul>
                     <div className="navbar-form navbar-right" style={{marginRight: "20px"}}>
                         <Search />
+                        {this.props.token ? <div className="btn btn-default" style={{marginLeft: "10px"}} onClick={this.props.logout}>Logout</div> : null }
                     </div>
                 </div>
             </nav>
         )
     }
 }
+
+let mapStateToProps = (state) => {
+    return {
+        token: state.auth.token,
+    }
+}
+
+let mapDispatchToProps = (dispatch, ownProps) => {
+    return {
+        logout: () => {
+            dispatch({type: "DO_LOGOUT"})
+        },
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Nav)
