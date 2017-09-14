@@ -73,7 +73,7 @@ resource "aws_db_instance" "estate" {
     username = "${db_user}"
     password = "${db_password}"
     vpc_security_group_ids = ["${aws_security_group.estate.name}"]
-    db_subnet_group_name = ${aws_db_subnet_group.estate.id}
+    db_subnet_group_name = "${aws_db_subnet_group.estate.id}"
     skip_final_snapshot = "true"
     backup_retention_period = 0
     copy_tags_to_snapshot = "true"
@@ -113,7 +113,7 @@ resource "aws_elasticache_cluster" "estate" {
     }
 }
 
-data "user_data" "estate" {
+data "template_file" "estate" {
   template = "${file("${path.module}/../shared/scripts/bootstrap.sh")}"
 
   vars {
@@ -133,7 +133,7 @@ resource "aws_instance" "estate" {
     ebs_optimized = true
     disable_api_termination = true
     root_block_device {
-        volume_type = gp2
+        volume_type = "gp2"
         volume_size =  "20"
         delete_on_termination = true
     }
@@ -143,7 +143,7 @@ resource "aws_instance" "estate" {
         private_key = "${file("${var.key_path}")}"
     }
 
-    user_data = "${data.user_data.estate.rendered}"
+    user_data = "${data.template_file.estate.rendered}"
 
     tags {
         Name = "${var.tagName}-${count.index}"
