@@ -19,8 +19,6 @@ dev:
     - "DATABASE_URL=postgres://postgres:estate@postgres:5432/estate"
   links:
     - postgres:postgres
-    - consul:consul
-    - vault:vault
 
 prod:
   build: .
@@ -34,8 +32,6 @@ prod:
     - "GUNICORN_WORKER_COUNT=5"
   links:
     - postgres:postgres
-    - consul:consul
-    - vault:vault
 
 postgres:
   image: postgres:9.5
