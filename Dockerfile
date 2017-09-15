@@ -8,8 +8,14 @@ ENV DJANGO_SETTINGS_MODULE=estate.settings \
     PATH=/usr/local/service/node_modules/.bin/:$PATH
 
 RUN yum update -y && \
-    yum install -y ca-certificates gcc libffi-devel libyaml-devel libmemcached-devel zlib-devel postgresql94-devel python27-devel python27-pip unzip docker git && \
-    mkdir -p /usr/local/service
+    yum install -y ca-certificates unzip
+
+# Download Docker
+ENV DOCKER_VERSION 17.04.0-ce
+RUN curl -fsSLO https://get.docker.com/builds/Linux/x86_64/docker-$DOCKER_VERSION.tgz && \
+    tar -xzf docker-$DOCKER_VERSION.tgz && \
+    mv docker/docker /bin/ && \
+    rm -r docker docker-$DOCKER_VERSION.tgz
 
 # Download Terraform
 COPY ./TERRAFORM_URL.txt /usr/local/service/TERRAFORM_URL.txt
@@ -18,13 +24,15 @@ RUN curl -L --silent $(cat /usr/local/service/TERRAFORM_URL.txt) > /terraform.zi
     rm /terraform.zip
 
 # Download nodejs
-ENV NODE_VERSION 6.10.2
-RUN curl -sLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" && \
-    tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 && \
-    rm "node-v$NODE_VERSION-linux-x64.tar.xz"
+ENV NODE_VERSION 6.11.3
+RUN curl -sLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" && \
+    tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 && \
+    rm "node-v$NODE_VERSION-linux-x64.tar.gz"
 
 # Install python dependencies
-RUN pip install coreapi==2.3.0 \
+RUN yum install -y gcc libffi-devel libyaml-devel libmemcached-devel zlib-devel postgresql94-devel python27-devel python27-pip && \
+    mkdir -p /usr/local/service && \
+    pip install coreapi==2.3.0 \
                 boto3==1.4.4 \
                 dj-database-url==0.4.1 \
                 Django==1.10.7 \
@@ -52,7 +60,9 @@ RUN pip install coreapi==2.3.0 \
                 semantic_version==2.6.0 \
                 structlog==17.1.0 \
                 whitenoise==3.3.0 && \
-    pip install --global-option="--with-libyaml" pyyaml==3.12
+    pip install --global-option="--with-libyaml" pyyaml==3.12 && \
+    yum remove --setopt=clean_requirements_on_remove=1 -y gcc libffi-devel libyaml-devel zlib-devel python27-devel
+
 
 # Install nodejs dependencies
 COPY ./package.json /usr/local/service/package.json

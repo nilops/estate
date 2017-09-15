@@ -13,6 +13,10 @@ dev:
     - /tmp:/tmp
   environment:
     - "DEBUG=True"
+    - "PGHOST=postgres"
+    - "PGUSER=postgres"
+    - "PGPASSWORD=estate"
+    - "PGDATABASE=estate"
     - "DATABASE_URL=postgres://postgres:estate@postgres:5432/estate"
   links:
     - postgres:postgres

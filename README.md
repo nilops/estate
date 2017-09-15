@@ -50,6 +50,10 @@ The requirements to run Estate in production are:
 * [SECRET_KEY](https://docs.djangoproject.com/en/1.11/ref/settings/#std:setting-SECRET_KEY): Django secret key variable
 * The docker socket is needed because Estate runs terraform in context of another docker container that it spins up on demand - the docker socket requires the container to run in privileged mode.
 
+Since this is a django application - database schema changes are controlled through django's migration system
+
+Once the application is up and running and connected to the database you'll need to have it run the migrations before you can use the application the best way to do this is to `docker exec` into a running container and run the command `django-admin migrate`  This will run all the migrations and get the database configured properly for the application to run properly.  It will also create a default superuser of Username: `root` Password: `admin` NOTE: for real production usecases you should create other users and disable/delete this auto generated superuser, see the Django documentation on the [Auth](https://docs.djangoproject.com/en/1.11/ref/contrib/auth/) modules for more information.
+
 Configuration
 -------------
 
@@ -125,6 +129,8 @@ Sentry is a first class citizen with Estate and the integration requires configu
 * Clone this repo with [Git](https://git-scm.com/): `git clone https://github.com/underarmour/estate.git`
 * Build the container images from root of the repo: `docker-compose build dev`
 * Run the containers: `docker-compose up dev`
+* Open a web browser to `http://localhost:8000/`
+* Login with the credentials Username: `root` Password: `admin`
 
 Every change to `Dockerfile` will require `docker-compose build dev` to be run. Changes to the codebase will be detected and Estate will be hot-reloaded.
 
