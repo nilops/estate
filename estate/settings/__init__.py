@@ -4,7 +4,6 @@ from .logging import * # NOQA
 from .history import * # NOQA
 from .webpack import * # NOQA
 from .drf import * # NOQA
-from .storages import * # NOQA
 from .sentry import * # NOQA
 from .estate import * # NOQA
 try:

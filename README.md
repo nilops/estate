@@ -10,7 +10,7 @@ Estate is essentially at Terraform UI/UX experience that makes Terraform easier 
 
 It is designed around these key principles:
 
-* Self-service infrastructure as code for everyone
+* Self-service infrastructure as code
 * Reduce the learning curve of Terraform
 * Make the right way the easy thing to do
 * Standardize usage of Terraform across an organization
@@ -24,6 +24,11 @@ This project has been presented at [HashiConf 2017 in Austin](https://www.hashic
 **For AWS Users**
 
 Terraform files in the bootstrap folder of the repository will provision the necessary AWS resources to run Estate in a production environment.
+
+* Clone this repo with [Git](https://git-scm.com/): `git clone https://github.com/underarmour/estate.git`
+* `cd ./bootstrapping/aws/`
+* `terraform plan -out=plan`
+* `terraform apply "plan"`
 
 **For non-AWS users**
 
@@ -105,23 +110,23 @@ Sentry is a first class citizen with Estate and the integration requires configu
 
 * `SENTRY_DSN`: [Data Source Name](https://docs.sentry.io/quickstart/#configure-the-dsn) is a variable consisting of configuration for sentry cluster. Example: 'https://key:secret@sentry.io/project'
 
-## Built With
+## Major Technologies
 
-* [Docker](url) - description
-* [Django](https://www.djangoproject.com/) application with
-* [Django Rest Framework](http://www.django-rest-framework.org/) to design it REST API functionality.
-* [Gunicorn](http://gunicorn.org/) workers.  The backend leverages
-* [Webpack](https://webpack.github.io/) using a standard single page app design that leverages
+* [Docker](https://www.docker.com/)
+* [Django](https://www.djangoproject.com/)
+* [Django Rest Framework](http://www.django-rest-framework.org/)
+* [Gunicorn](http://gunicorn.org/)
+* [Webpack](https://webpack.github.io/)
 * [React](https://facebook.github.io/react/)
 * [Redux](http://redux.js.org/)
 
 ## Developing locally
 
 * Clone this repo with [Git](https://git-scm.com/): `git clone https://github.com/underarmour/estate.git`
-* Build the container images from root of the repo: `docker-compose build`
-* Run the containers: `docker-compose up`
+* Build the container images from root of the repo: `docker-compose build dev`
+* Run the containers: `docker-compose up dev`
 
-Every change to `Dockerfile` will require `docker-compose build` to be run. Changes to the codebase will be detected and Estate will be hot-reloaded.
+Every change to `Dockerfile` will require `docker-compose build dev` to be run. Changes to the codebase will be detected and Estate will be hot-reloaded.
 
 ## Contributing
 
@@ -129,7 +134,7 @@ Every change to `Dockerfile` will require `docker-compose build` to be run. Chan
 * Create your branch (git checkout -b my-branch)
 * Commit your changes (git commit -am 'added fixes for something')
 * Push to the branch (git push origin my-branch)
-* Create a new Pull Request (Travis CI will test your changes)
+* Create a new Pull Request
 * And you're done!
 
 Features, bug fixes, bug reports and documentation update are all welcome!

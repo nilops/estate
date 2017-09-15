@@ -37,7 +37,6 @@ RUN pip install coreapi==2.3.0 \
                 django-permanent==1.1.6 \
                 django-rest-swagger==2.1.2 \
                 django-simple-history==1.9.0 \
-                django-storages==1.5.2 \
                 django-webpack-loader==0.4.1 \
                 djangorestframework==3.6.3 \
                 gevent==1.2.1 \
