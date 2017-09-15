@@ -1,4 +1,5 @@
 FROM amazonlinux:2017.03
+MAINTAINER ops@underarmour.com
 
 WORKDIR /usr/local/service
 
@@ -10,16 +11,19 @@ RUN yum update -y && \
     yum install -y ca-certificates gcc libffi-devel libyaml-devel libmemcached-devel zlib-devel postgresql94-devel python27-devel python27-pip unzip docker git && \
     mkdir -p /usr/local/service
 
+# Download Terraform
 COPY ./TERRAFORM_URL.txt /usr/local/service/TERRAFORM_URL.txt
 RUN curl -L --silent $(cat /usr/local/service/TERRAFORM_URL.txt) > /terraform.zip && \
     unzip /terraform.zip -d /bin/ && \
     rm /terraform.zip
 
+# Download nodejs
 ENV NODE_VERSION 6.10.2
 RUN curl -sLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" && \
     tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 && \
     rm "node-v$NODE_VERSION-linux-x64.tar.xz"
 
+# Install python dependencies
 RUN pip install coreapi==2.3.0 \
                 boto3==1.4.4 \
                 dj-database-url==0.4.1 \
@@ -51,6 +55,7 @@ RUN pip install coreapi==2.3.0 \
                 whitenoise==3.3.0 && \
     pip install --global-option="--with-libyaml" pyyaml==3.12
 
+# Install nodejs dependencies
 COPY ./package.json /usr/local/service/package.json
 RUN npm install
 
