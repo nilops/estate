@@ -1,14 +1,13 @@
 dev:
   build: .
   dockerfile: Dockerfile
-  command: local
+  command: /usr/local/service/estate/local.sh
   ports:
     - 8000:8000
     - 3000:3000
   volumes:
     - $PWD/estate:/usr/local/service/estate
     - $PWD/webpack:/usr/local/service/webpack
-    - $PWD/scripts/local.sh:/usr/bin/local
     - /var/run/docker.sock:/var/run/docker.sock
     - /tmp:/tmp
   environment:
