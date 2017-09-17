@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from django.db.models.query import QuerySet
-from rest_framework import serializers, decorators, response
+from rest_framework import serializers, decorators, response, permissions
 
 
 class HistoricalSerializer(serializers.ModelSerializer):
@@ -31,3 +31,21 @@ class HistoryMixin(object):
         instance = self.get_object()
         serializer = self.get_serializer(instance.history.all(), many=True, is_history=True)
         return response.Response(serializer.data)
+
+
+class IsOwner(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if obj.owner:
+            return request.user.groups.filter(name=obj.owner).count() == 1
+        else:
+            return True
+
+
+class OwnsNamespace(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if obj.namespace.owner:
+            return request.user.groups.filter(name=obj.namespace.owner).count() == 1
+        else:
+            return True

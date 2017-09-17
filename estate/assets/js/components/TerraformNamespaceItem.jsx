@@ -234,7 +234,7 @@ class TerraformNamespaceItem extends React.Component {
         this.props.unlockNamespace(this.props.namespace.pk)
     }
     createFilePane(props) {
-        var locked = this.props.namespace.is_uneditable
+        var locked = this.props.namespace.is_readonly
         var index = findIndex(this.state.files, {slug: props.match.params.file})
         if (index == -1){
             return null
@@ -259,7 +259,7 @@ class TerraformNamespaceItem extends React.Component {
         )
     }
     createFileList() {
-        var locked = this.props.namespace.is_uneditable
+        var locked = this.props.namespace.is_readonly
         var url = this.props.match.url
         var count = 0
         var elements = []
@@ -307,7 +307,7 @@ class TerraformNamespaceItem extends React.Component {
         )
     }
     createTemplatePane(props) {
-        var locked = this.props.namespace.is_uneditable
+        var locked = this.props.namespace.is_readonly
         var index = findIndex(this.state.templates, {slug: props.match.params.template})
         if (index == -1){
             return null
@@ -349,7 +349,7 @@ class TerraformNamespaceItem extends React.Component {
         )
     }
     createTemplateList() {
-        var locked = this.props.namespace.is_uneditable
+        var locked = this.props.namespace.is_readonly
         var url = this.props.match.url
         var count = 0
         var elements = []
@@ -446,7 +446,7 @@ class TerraformNamespaceItem extends React.Component {
         )
     }
     createExperimentPane() {
-        var locked = this.props.namespace.is_uneditable
+        var locked = this.props.namespace.is_readonly
         var data = this.props.experimentOutput
         var output = join(data.output, "")
         return (
@@ -501,9 +501,12 @@ class TerraformNamespaceItem extends React.Component {
         if (this.props.namespace == null) {
             return null
         }
+        if (this.props.namespace.is_owner == false){
+            return null
+        }
         const url = this.props.match.url
         const namespace = this.props.namespace
-        const locked = namespace.is_uneditable
+        const locked = namespace.is_readonly
         return (
             <div>
                 <div className="col-xs-2 sidebar">

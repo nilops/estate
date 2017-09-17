@@ -14,9 +14,9 @@ LOG = logging.getLogger(__name__)
 
 
 class Namespace(EstateAbstractBase):
-    owner = models.CharField(_('owner'), max_length=80)
-    locked = models.BooleanField(default=False)
-    locking_user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
+    owner = models.ForeignKey("auth.Group", related_name="namespaces", null=True, blank=True)
+    locked = models.BooleanField(_('locked'), default=False)
+    locking_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="locked_namespaces", null=True, blank=True)
     # TODO: Add tags
 
     history = HistoricalRecordsWithoutDelete(excluded_fields=['slug'])

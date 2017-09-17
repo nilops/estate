@@ -90,7 +90,9 @@ class DashboardListView extends React.Component {
         let data = []
         each(this.props.data, (item) => {
             if (item) {
-                item.link = <Link className="btn btn-default btn-xs glyphicon glyphicon-pencil" to={ urljoin(this.props.match.url, item.slug) } />
+                if (item.is_owner) {
+                    item.link = <Link className="btn btn-default btn-xs glyphicon glyphicon-pencil" to={ urljoin(this.props.match.url, item.slug) } />
+                }
                 item.modified = new Date(Date.parse(item.modified)).toLocaleString()
                 data.push(item)
             }

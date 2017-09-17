@@ -31,7 +31,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
@@ -62,7 +61,7 @@ SWAGGER_SETTINGS = {
     },
     'LOGIN_URL': 'rest_framework:login',
     'LOGOUT_URL': 'rest_framework:logout',
-    'USE_SESSION_AUTH': True,
+    'USE_SESSION_AUTH': False,
     'APIS_SORTER': 'alpha',
     'JSON_EDITOR': True,
     'VALIDATOR_URL': None

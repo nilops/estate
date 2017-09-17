@@ -6,8 +6,8 @@ Namespace = apps.get_model('terraform.Namespace')
 
 
 class NamespaceAdmin(admin.ModelAdmin):
-    list_display = ['pk', 'title', 'description', 'modified']
-    list_editable = ['title', 'description']
+    list_display = ['pk', 'title', 'owner', 'locked', 'locking_user']
+    list_editable = ['title', 'owner']
     list_filter = ['title']
     search_fields = ['slug', 'title']
     list_per_page = 10

@@ -24,6 +24,18 @@ const TerraformNamespacesTableColumns = [
         sortable: false,
     },
     {
+        Header: "Owning Group",
+        accessor: "owner",
+        maxWidth: 200,
+        sortable: false,
+    },
+    {
+        Header: "Locked",
+        accessor: "locking_user",
+        maxWidth: 200,
+        sortable: false,
+    },
+    {
         Header: "Modified",
         accessor: "modified",
         maxWidth: 200,

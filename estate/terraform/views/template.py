@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 import json
 from django.apps import apps
-from rest_framework import serializers, viewsets, decorators, exceptions, status, response
+from rest_framework import serializers, viewsets, decorators, exceptions, status, response, filters
 from semantic_version import Version
-from estate.core.views import HistoricalSerializer, HistoryMixin
+from estate.core.views import HistoricalSerializer, HistoryMixin, OwnsNamespace
 from estate.core import renderer
 
 Namespace = apps.get_model("terraform.Namespace")
@@ -20,14 +20,18 @@ class TemplateSerializer(HistoricalSerializer):
     version_increment = serializers.ChoiceField(choices=["major", "minor", "patch", "initial"], write_only=True)
     body = serializers.CharField(default="", allow_blank=True, validators=[renderer.is_valid_template])
     body_mode = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Template
-        fields = ("pk", "slug", "title", "description", "version", "version_increment", "json_schema", "ui_schema", "body", "body_mode", "created", "modified")
+        fields = ("pk", "slug", "title", "description", "version", "version_increment", "json_schema", "ui_schema", "body", "body_mode", "is_owner", "created", "modified")
         historical_fields = ("pk", "slug", "title", "description", "version", "json_schema", "ui_schema", "body")
 
     def get_body_mode(self, instance):
         return renderer.get_style(instance.body)
+
+    def get_is_owner(self, instance):
+        return True
 
     def create(self, validated_data):
         version_increment = validated_data.pop("version_increment", "initial")
@@ -123,9 +127,18 @@ class TemplateInstanceSerializer(HistoricalSerializer):
         return super(TemplateInstanceSerializer, self).update(instance, validated_data)
 
 
+class TemplateInstanceFilter(filters.FilterSet):
+
+    class Meta:
+        model = TemplateInstance
+        fields = ["title", "namespace"]
+
+
 class TemplateInstanceApiView(HistoryMixin, viewsets.ModelViewSet):
     queryset = TemplateInstance.objects.all()
     serializer_class = TemplateInstanceSerializer
+    filter_class = TemplateInstanceFilter
+    permission_classes = (OwnsNamespace, )
     filter_fields = ("slug",)
     search_fields = ("title",)
     ordering_fields = ("title", "created", "modified")
