@@ -33,7 +33,6 @@ export function error(message) {
 export function handleResponseError(err) {
     if (err.response || err.errors) {
         var data = err.response.data
-        console.log(data)
         var message = ""
         if (isArray(data.errors)) {
             each(data.errors, (item) => {

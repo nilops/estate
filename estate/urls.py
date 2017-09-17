@@ -23,7 +23,6 @@ urlpatterns = [
     url(r'^api/$', RedirectView.as_view(url='/api/swagger/')),
     url(r'^api/schema/$', base_schema_view),
     url(r'^api/swagger/', swagger_view),
-    url(r'^api/docs/', include_docs_urls(title=title), name="api-docs"),
     url(r'^api/v1/terraform/', include('estate.terraform.urls')),
     # Acts as a catchall for everything else and react router will take over
     url(r'^', TemplateView.as_view(template_name='index.html')),

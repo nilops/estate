@@ -17,6 +17,8 @@ var initialState = {
     files: [],
     templates: [],
     renderedTemplate: "{}",
+    diffTemplateOld: "{}",
+    diffTemplateNew: "{}",
     templatesPage: 0,
     templatesPages: 0,
 }
@@ -145,4 +147,10 @@ export default createReducer(initialState, {
         state = set(["renderedTemplate"])(action.payload)(state)
         return state
     },
+
+    ["LOAD_TEMPLATE_INSTANCE_DIFF"]: (state, action) => {
+        state = set(["diffTemplateOld"])(action.payload.old)(state)
+        state = set(["diffTemplateNew"])(action.payload.new)(state)
+        return state
+    }
 })

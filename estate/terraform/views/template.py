@@ -6,6 +6,7 @@ from semantic_version import Version
 from estate.core.views import HistoricalSerializer, HistoryMixin, OwnsNamespace
 from estate.core import renderer
 
+
 Namespace = apps.get_model("terraform.Namespace")
 Template = apps.get_model("terraform.Template")
 TemplateInstance = apps.get_model("terraform.TemplateInstance")
@@ -127,6 +128,11 @@ class TemplateInstanceSerializer(HistoricalSerializer):
         return super(TemplateInstanceSerializer, self).update(instance, validated_data)
 
 
+class TemplateDiffSerializer(serializers.Serializer):
+    old = serializers.JSONField(read_only=True)
+    new = serializers.JSONField(read_only=True)
+
+
 class TemplateInstanceFilter(filters.FilterSet):
 
     class Meta:
@@ -136,12 +142,46 @@ class TemplateInstanceFilter(filters.FilterSet):
 
 class TemplateInstanceApiView(HistoryMixin, viewsets.ModelViewSet):
     queryset = TemplateInstance.objects.all()
-    serializer_class = TemplateInstanceSerializer
+    serializers = {
+        "default": TemplateInstanceSerializer,
+        "diff_latest": TemplateDiffSerializer,
+    }
     filter_class = TemplateInstanceFilter
     permission_classes = (OwnsNamespace, )
     filter_fields = ("slug",)
     search_fields = ("title",)
     ordering_fields = ("title", "created", "modified")
+
+    def get_serializer_class(self):
+        return self.serializers.get(self.action, self.serializers["default"])
+
+    @decorators.detail_route(methods=["GET"])
+    def diff_latest(self, request, *args, **kwargs):
+        instance = self.get_object()
+        latest_template = Template.all_objects.get(pk=instance.template.id)
+        old_data = {
+            "template_str": instance.template.body,
+            "inputs": instance.inputs,
+            "overrides": instance.overrides,
+            "disable": instance.disable,
+        }
+        new_data = {
+            "template_str": latest_template.body,
+            "inputs": instance.inputs,
+            "overrides": instance.overrides,
+            "disable": instance.disable,
+        }
+        try:
+            data = {
+                "old": renderer.render_template(**old_data),
+                "new": renderer.render_template(**new_data),
+            }
+        except Exception as e:
+            raise exceptions.APIException(str(e))
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        headers = self.get_success_headers(serializer.data)
+        return response.Response(data, status=status.HTTP_200_OK, headers=headers)
 
     @decorators.detail_route(methods=["POST"])
     def update_template(self, request, *args, **kwargs):

@@ -7,6 +7,7 @@ import ReactTooltip from "react-tooltip"
 import Ansi from "ansi-to-react"
 import Editor from "./Editor"
 import ConfirmModal from "./ConfirmModal"
+import DiffModal from "./DiffModal"
 import TerraformNamespaceAddFileModal from "./TerraformNamespaceAddFileModal"
 import TerraformTemplateRenderer from "./TerraformTemplateRenderer"
 import * as terraform from "../api/terraform"
@@ -297,12 +298,21 @@ class TerraformNamespaceItem extends React.Component {
         })
         return elements
     }
-    createTemplateUpdateButton(id) {
+    createTemplateUpdateButton(locked, templateInstance) {
+        if (locked)
+            return null
+        if (!templateInstance.is_outdated)
+            return null
+        var id = templateInstance.pk
         return (
-            <ConfirmModal className="flashing text-danger glyphicon glyphicon-exclamation-sign"
+            <DiffModal className="flashing text-danger glyphicon glyphicon-exclamation-sign"
                 buttonText=" "
                 titleText="Update to latest template version?"
                 tooltipText="Click to update to latest version"
+                diff_old={JSON.stringify(this.props.diffTemplateOld, null, 2)}
+                diff_new={JSON.stringify(this.props.diffTemplateNew, null, 2)}
+                diff_type="json"
+                load={this.props.diffTemplateInstance.bind(null, id)}
                 callback={this.props.updateTemplateOfTemplateInstance.bind(null, id)} />
         )
     }
@@ -326,7 +336,6 @@ class TerraformNamespaceItem extends React.Component {
                 <div className="col-xs-12">
                     <h1 className="page-header">
                         {templateInstance.title}
-                        {locked ? null :
                         <div className="pull-right">
                             { templateInstance.nextDisable ?
                                 <div className="btn btn-success btn-inline" onClick={this.onTemplateToggleDisable.bind(this, index, false)}>Enable</div>
@@ -334,9 +343,9 @@ class TerraformNamespaceItem extends React.Component {
                                 <div className="btn btn-danger btn-inline" onClick={this.onTemplateToggleDisable.bind(this, index, true)}>Disable</div>
                             }
                             {/*<div className="btn btn-default btn-inline">Update</div>*/}
-                            <span> [ {templateInstance.template.title} : {templateInstance.template.version} { templateInstance.is_outdated ? this.createTemplateUpdateButton.bind(this)(templateInstance.pk) : "" } ]</span>
+                            <span> [ {templateInstance.template.title} : {templateInstance.template.version} { this.createTemplateUpdateButton.bind(this)(locked, templateInstance) } ]
+                            </span>
                         </div>
-                        }
                     </h1>
                 </div>
                 <div className="col-xs-12">
@@ -635,6 +644,9 @@ const mapStateToProps = (state, ownProps) => {
         updateFile: terraform.updateFile,
         updateTemplateInstance: terraform.updateTemplateInstance,
         updateTemplateOfTemplateInstance: terraform.updateTemplateOfTemplateInstance,
+        diffTemplateInstance: terraform.diffTemplateInstance,
+        diffTemplateOld: state.terraform.diffTemplateOld,
+        diffTemplateNew: state.terraform.diffTemplateNew,
         planOutput: state.terraform.planOutput,
         applyOutput: state.terraform.applyOutput,
         stateObject: state.terraform.stateObject,

@@ -34,6 +34,8 @@ class Modal extends React.Component {
         this.closeModal()
     }
     openModal() {
+        if (this.props.performLoad)
+            this.props.performLoad()
         if (!this.props.disabled)
             this.setState({modalIsOpen: true})
     }

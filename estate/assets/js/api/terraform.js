@@ -118,6 +118,17 @@ export function updateTemplateOfTemplateInstance(id) {
     return req
 }
 
+export function diffTemplateInstance(id) {
+    const req = axios.get(`/api/v1/terraform/templateinstance/${id}/diff_latest/`)
+    req.then((res) => {
+        dispatch({
+            type: "LOAD_TEMPLATE_INSTANCE_DIFF",
+            payload: res.data
+        })
+    }, messages.handleResponseError)
+    return req
+}
+
 export function removeTemplateFromNamespace(slug, id) {
     const req = axios.delete(`/api/v1/terraform/templateinstance/${id}/`)
     req.then(() => {
