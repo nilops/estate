@@ -73,7 +73,7 @@ class Modal extends React.Component {
                                 { this.props.children }
                             </div>
                             <div className="modal-footer">
-                                <button className="btn btn-default" type="button" onClick={this.closeModal.bind(this)} >Close</button>
+                                <button className="btn btn-default" type="button" onClick={this.closeModal.bind(this)} tabIndex={1} >Close</button>
                                 <button className={"btn btn-primary"} disabled={!this.isSaveValid()} type="submit" >Submit</button>
                             </div>
                         </form>

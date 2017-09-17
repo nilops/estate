@@ -31,18 +31,24 @@ export function error(message) {
 }
 
 export function handleResponseError(err) {
-    if (err.response) {
+    if (err.response || err.errors) {
+        var data = err.response.data
+        console.log(data)
         var message = ""
-        if (isArray(err.response.data.errors)) {
-            each(err.response.data.errors, (item) => {
+        if (isArray(data.errors)) {
+            each(data.errors, (item) => {
                 message += item.detail + "\n"
             })
+        } else if (data.errors.non_field_errors) {
+            each(data.errors.non_field_errors, (item) => {
+                message += item + "\n"
+            })
         } else {
-            message += err.response.data.errors.detail
+            message += data.errors.detail
         }
         dispatch(Notifications.show({
             uid: count++,
-            title: `[${err.response.data.status_code}] ${err.response.data.status_text}`,
+            title: `[${data.status_code}] ${data.status_text}`,
             message: message,
             position: "tl",
             autoDismiss: 0,

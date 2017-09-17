@@ -8,10 +8,11 @@ until psql -c "select 1" > /dev/null 2>&1 || [ $RETRIES -eq 0 ]; do
   echo "Waiting for postgres server, $((RETRIES--)) remaining attempts..."
   sleep 1
 done
+echo "Preparing database for local development"
+django-admin migrate > /dev/null
+django-admin loaddata initial_data > /dev/null
 
 echo "Starting Webpack Server"
 webpack-dev-server --config webpack/webpack.local.config.js &
 echo "Starting Django Server"
-django-admin migrate
-django-admin loaddata initial_data
 exec django-admin runserver 0.0.0.0:8000

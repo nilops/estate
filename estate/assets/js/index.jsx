@@ -13,6 +13,24 @@ import "./estate.css"
 
 axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 axios.defaults.xsrfCookieName = "csrftoken";
+if (localStorage.authToken) {
+    axios.defaults.headers = {'Authorization': 'Token ' + localStorage.authToken}
+}
+window.addEventListener("storage", function(e) {
+    if (e.key === "authToken"){
+        if (e.newValue) {
+            window.dispatch({
+                type: "CONFIRM_LOGIN",
+                payload: {token: e.newValue}
+            })
+        } else {
+            window.dispatch({
+                type: "CONFIRM_LOGOUT",
+                payload: {token: e.newValue}
+            })
+        }
+    }
+})
 
 window.jsyaml = require("js-yaml") // eslint-disable-line no-undef
 
