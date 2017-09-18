@@ -1,40 +1,45 @@
-dev:
-  build: .
-  dockerfile: Dockerfile
-  command: /usr/local/service/estate/local.sh
-  ports:
-    - 8000:8000
-    - 3000:3000
-  volumes:
-    - $PWD/estate:/usr/local/service/estate
-    - $PWD/webpack:/usr/local/service/webpack
-    - /var/run/docker.sock:/var/run/docker.sock
-    - /tmp:/tmp
-  environment:
-    - "DEBUG=True"
-    - "PGHOST=postgres"
-    - "PGUSER=postgres"
-    - "PGPASSWORD=estate"
-    - "PGDATABASE=estate"
-    - "DATABASE_URL=postgres://postgres:estate@postgres:5432/estate"
-  links:
-    - postgres:postgres
+version: '3'
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: /usr/local/service/estate/local.sh
+    ports:
+      - 8000:8000
+      - 3000:3000
+    volumes:
+      - $PWD/estate:/usr/local/service/estate
+      - $PWD/webpack:/usr/local/service/webpack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp:/tmp
+    environment:
+      - "DEBUG=True"
+      - "PGHOST=postgres"
+      - "PGUSER=postgres"
+      - "PGPASSWORD=estate"
+      - "PGDATABASE=estate"
+      - "DATABASE_URL=postgres://postgres:estate@postgres:5432/estate"
+    links:
+      - postgres:postgres
 
-prod:
-  build: .
-  dockerfile: Dockerfile
-  ports:
-    - 8000:8000
-  volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-  environment:
-    - "DATABASE_URL=postgres://postgres:estate@postgres:5432/estate"
-    - "GUNICORN_WORKER_COUNT=5"
-  links:
-    - postgres:postgres
+  prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 8000:8000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - "DATABASE_URL=postgres://postgres:estate@postgres:5432/estate"
+      - "GUNICORN_WORKER_COUNT=5"
+    links:
+      - postgres:postgres
 
-postgres:
-  image: postgres:9.5
-  environment:
-    - "POSTGRES_PASSWORD=estate"
-    - "POSTGRES_DB=estate"
+  postgres:
+    image: postgres:9.5
+    environment:
+      - "POSTGRES_PASSWORD=estate"
+      - "POSTGRES_DB=estate"
